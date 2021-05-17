@@ -90,7 +90,7 @@ const rateLimiter = rateLimit({
 });
 
 const loggerInit = (req, res, next) => {
-  if (process.env.NODE_ENV != "prod") {
+  if (process.env.NODE_ENV != "production") {
     logger("combined");
   }
   next();
