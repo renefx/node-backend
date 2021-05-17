@@ -14,46 +14,87 @@ router.get("/", (req, res) => {
   Produto.find()
     .skip(skipElementos)
     .limit(elementos)
+    .lean()
     .then((doc) => {
-      console.log(doc);
       res.send(doc);
     })
     .catch((err) => {
-      console.log(err);
       next(err);
     });
 });
 
-router.post("/", function (req, res, next) {
-  let produto = new Produto({
-    nome: req.body.nome,
-    preco: req.body.preco,
-    descricao: req.body.descricao,
-    imager: req.body.imagem,
-    pemiteAlteracao: req.body.pemiteAlteracao,
-  });
+router.get("/autenticado", checkAuth, (req, res) => {
+  let { pagina } = req.headers;
+  pagina = pagina === undefined ? 0 : pagina;
+  const elementos = 3,
+    skipElementos = pagina * elementos;
 
-  produto
-    .save()
+  Produto.find()
+    .skip(skipElementos)
+    .limit(elementos)
+    .lean()
     .then((doc) => {
-      console.log(doc);
-      res.send({ produto: doc });
+      res.send(doc);
     })
     .catch((err) => {
-      console.error(err);
-      if (err.name === "MongoError" && err.code === 11000) {
-        res
-          .status(409)
-          .send({ mensagem: "Produto já existente!", erro: err.message });
-      } else {
-        next(err);
-      }
+      next(err);
     });
 });
 
-router.get("/image/:produtoId", (req, res) => {
-  const { produtoId } = req.params;
-  res.send("👌");
+router.post("/", async function (req, res, next) {
+  try {
+    let produto = new Produto(req.body);
+    let error = produto.joiValidate(req.body);
+    if (error != null) {
+      throw error;
+    }
+
+    const doc = await produto.save();
+    res.send(doc);
+  } catch (err) {
+    if (err.name === "MongoError" && err.code === 11000) {
+      res
+        .status(409)
+        .send({ mensagem: "Produto já existente!", erro: err.message });
+    } else {
+      next(err);
+    }
+  }
+});
+
+router.post(
+  "/image",
+  multer(multerConfig.uploadImage).single("imagemProduto"),
+  async function (req, res, next) {
+    const { originalname: name, size, key, location: url } = req.file;
+    req.body.imagem = key;
+    try {
+      let produto = new Produto(req.body);
+      let error = produto.joiValidate(req.body);
+      if (error != null) {
+        throw error;
+      }
+
+      const doc = await produto.save();
+      res.send(doc);
+    } catch (err) {
+      await multerConfig.deleteImage(key);
+      if (err.name === "MongoError" && err.code === 11000) {
+        res.status(409).send({ mensagem: "Produto já existente!" });
+      } else {
+        next(err);
+      }
+    }
+  }
+);
+
+router.get("/image", async (req, res, next) => {
+  const { key } = req.body;
+  try {
+    multerConfig.downloadFile(key, res);
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get("/:produtoId", (req, res) => {
