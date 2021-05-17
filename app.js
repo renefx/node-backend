@@ -4,6 +4,8 @@ const ipfilter = require("express-ipfilter").IpFilter;
 
 const pedidosRoutes = require("./api/routes/pedidos");
 const produtosRoutes = require("./api/routes/produtos");
+const usuariosRoutes = require("./api/routes/usuarios");
+
 const middleware = require("./api/middleware/middleware");
 const mongooseInit = require("./api/middleware/mongooseInit");
 
@@ -21,9 +23,11 @@ app.use(middleware.rateLimiter);
 app.use(helmet());
 
 app.use("/static", express.static("public"));
+app.use("/files", express.static("tmp/uploads"));
 
 app.use("/pedidos", pedidosRoutes);
 app.use("/produtos", produtosRoutes);
+app.use("/usuario", usuariosRoutes);
 
 app.use(function (req, res, next) {
   const error = new Error("URL não encontrada");
