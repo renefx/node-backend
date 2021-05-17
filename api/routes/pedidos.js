@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 const router = express.Router();
 const Pedido = require("../models/pedido");
 const Produto = require("../models/produto");
-
-module.exports = router;
+const pushNotifications = require("../util/pushNotifications");
 
 router.get("/", (req, res) => {
   Pedido.find()
@@ -42,6 +41,14 @@ router.post("/", async function (req, res, next) {
     .save()
     .then((doc) => {
       console.log(doc);
+
+      const registrationToken =
+        "fcPD4-GqRv-CgYYq5KsuCu:APA91bEqf4R72qGBl7ui-fdDM3RegLKwm1R_7XVpSls5KDpeJ1BpQ614xoxldshqZPqdcLbu9SrLQG2s7cp6sP-sGG1R7ustpZmU92GqTrqtHE6lw_Ryuf-ZBKgIIgdoG_FEn0kU-APy";
+      const data = {};
+      const titulo = "Novo pedido";
+      const corpo = "Um novo pedido foi feito em sua conta.";
+      pushNotifications.send(registrationToken, data, titulo, corpo);
+
       res.send({ pedido: doc });
     })
     .catch((err) => {
