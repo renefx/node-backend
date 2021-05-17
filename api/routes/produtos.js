@@ -1,7 +1,9 @@
 const express = require("express");
-const router = express.Router();
-
+const multer = require("multer");
+const multerConfig = require("../util/multerConfigs");
 const Produto = require("../models/produto");
+const checkAuth = require("../middleware/check-auth");
+const router = express.Router();
 
 router.get("/", (req, res) => {
   let { pagina } = req.headers;
