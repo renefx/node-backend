@@ -14,8 +14,7 @@ const preencherIpsBloqueados = async () => {
 };
 
 const init = () => {
-  const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.yhk3s.mongodb.net/china-box-business?retryWrites=true&w=majority`;
-
+  let uri = `mongodb+srv://${process.env.BD_USER}:${process.env.BD_PASSWORD}@cluster0.yhk3s.mongodb.net/${process.env.BD_NAME}?retryWrites=true&w=majority`;
   mongoose.connect(
     uri,
     {
