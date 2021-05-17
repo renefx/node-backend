@@ -36,6 +36,10 @@ const deveBloquearIP = (doc, now) => {
 };
 
 const limitReached = async (req, res) => {
+  if (process.env.NODE_ENV != "production") {
+    return;
+  }
+
   const now = moment().utcOffset(-3);
   const nowDate = now.toDate();
   const nowString = now.format("DD/MM/YYYY HH:mm");
@@ -86,7 +90,9 @@ const rateLimiter = rateLimit({
 });
 
 const loggerInit = (req, res, next) => {
-  logger("combined", { skip: (req, res) => process.env.NODE_ENV === "prod" });
+  if (process.env.NODE_ENV != "prod") {
+    logger("combined");
+  }
   next();
 };
 
